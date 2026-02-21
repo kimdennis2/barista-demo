@@ -37,7 +37,7 @@
 </head>
 <body>
     <div class="box">
-        <h1>☕ Barista Bot</h1>
+        <h1> ☕ Barista Bot </h1>
         <p>Your personal coffee assistant</p>
         <button onclick="alert('Hello! What coffee would you like?')">Order Coffee</button>
     </div>
