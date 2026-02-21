@@ -13,7 +13,22 @@
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
+}.filters {
+  margin-bottom: 15px;
 }
+.filters button {
+  background: #6f4e37;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  margin: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.filters button:hover {
+  background: #5a3e2b;
+}
+    
     <head>
     .dashboard {
   background: #fff;
@@ -24,6 +39,30 @@
   border-radius: 12px;
   box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
+    <div class="dashboard">
+  <h2>Barista Dashboard</h2>
+  <div class="filters">
+    <button onclick="filterOrders('All')">Show All</button>
+    <button onclick="filterOrders('Pending')">Pending</button>
+    <button onclick="filterOrders('In Progress')">In Progress</button>
+    <button onclick="filterOrders('Ready')">Ready</button>
+  </div>
+  <table id="ordersTable">
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Coffee</th>
+        <th>Size</th>
+        <th>Extras</th>
+        <th>Time</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Orders will appear here -->
+    </tbody>
+  </table>
+</div>
 table {
   width: 100%;
   border-collapse: collapse;
@@ -171,6 +210,17 @@ th {
   </footer>
 
   <script>
+    function filterOrders(status) {
+  const rows = document.querySelectorAll("#ordersTable tbody tr");
+  rows.forEach(row => {
+    const btn = row.querySelector(".status-btn");
+    if (status === "All" || btn.innerText === status) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+}
     let orderCount = 0;
 
 document.getElementById("coffeeForm").onsubmit = function(e) {
