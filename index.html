@@ -6,6 +6,14 @@
   <title>Barista Bot</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    .status-btn {
+  background: orange; /* Pending = Orange */
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
     <head>
     .dashboard {
   background: #fff;
@@ -109,6 +117,16 @@ th {
   <table id="ordersTable">
     <thead>
       <tr>
+        <thead>
+  <tr>
+    <th>Order #</th>
+    <th>Coffee</th>
+    <th>Size</th>
+    <th>Extras</th>
+    <th>Time</th> <!-- NEW COLUMN -->
+    <th>Status</th>
+  </tr>
+</thead>
         <th>Order #</th>
         <th>Coffee</th>
         <th>Size</th>
@@ -165,8 +183,19 @@ document.getElementById("coffeeForm").onsubmit = function(e) {
                       .join(", ") || "None";
 
   orderCount++;
+  const time = new Date().toLocaleTimeString(); // NEW LINE
+
   const table = document.getElementById("ordersTable").querySelector("tbody");
   const row = table.insertRow();
+  row.innerHTML = `
+    <td>${orderCount}</td>
+    <td>${coffee}</td>
+    <td>${size}</td>
+    <td>${extras}</td>
+    <td>${time}</td> <!-- NEW CELL -->
+    <td><button class="status-btn" onclick="updateStatus(this)">Pending</button></td>
+  `;
+};
   row.innerHTML = `
     <td>${orderCount}</td>
     <td>${coffee}</td>
@@ -175,13 +204,13 @@ document.getElementById("coffeeForm").onsubmit = function(e) {
     <td><button class="status-btn" onclick="updateStatus(this)">Pending</button></td>
   `;
 };
-
 function updateStatus(btn) {
   if (btn.innerText === "Pending") {
     btn.innerText = "In Progress";
+    btn.style.background = "blue";   // In Progress = Blue
   } else if (btn.innerText === "In Progress") {
     btn.innerText = "Ready";
-    btn.style.background = "green";
+    btn.style.background = "green";  // Ready = Green
   }
 }
-    
+
