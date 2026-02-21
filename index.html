@@ -6,6 +6,40 @@
   <title>Barista Bot</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    <head>
+    .dashboard {
+  background: #fff;
+  color: #333;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+}
+th {
+  background: #6f4e37;
+  color: #fff;
+}
+.status-btn {
+  background: #6f4e37;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.status-btn:hover {
+  background: #5a3e2b;
+}
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #6f4e37, #3e2723);
@@ -70,6 +104,23 @@
   </header>
 
   <div class="order-box">
+    <div class="dashboard">
+  <h2>Barista Dashboard</h2>
+  <table id="ordersTable">
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Coffee</th>
+        <th>Size</th>
+        <th>Extras</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Orders will appear here -->
+    </tbody>
+  </table>
+</div>
     <h2>Place Your Order</h2>
     <form id="coffeeForm">
       <label>Coffee Type:</label>
@@ -102,16 +153,35 @@
   </footer>
 
   <script>
-    document.getElementById("coffeeForm").onsubmit = function(e) {
-      e.preventDefault();
-      const coffee = e.target.coffee.value;
-      const size = e.target.size.value;
-      const extras = Array.from(e.target.extra)
-                          .filter(x => x.checked)
-                          .map(x => x.value)
-                          .join(", ") || "None";
-      alert(`Order received: ${size} ${coffee} with ${extras}. Preparing now!`);
-    };
-  </script>
-</body>
-</html>
+    let orderCount = 0;
+
+document.getElementById("coffeeForm").onsubmit = function(e) {
+  e.preventDefault();
+  const coffee = e.target.coffee.value;
+  const size = e.target.size.value;
+  const extras = Array.from(e.target.extra)
+                      .filter(x => x.checked)
+                      .map(x => x.value)
+                      .join(", ") || "None";
+
+  orderCount++;
+  const table = document.getElementById("ordersTable").querySelector("tbody");
+  const row = table.insertRow();
+  row.innerHTML = `
+    <td>${orderCount}</td>
+    <td>${coffee}</td>
+    <td>${size}</td>
+    <td>${extras}</td>
+    <td><button class="status-btn" onclick="updateStatus(this)">Pending</button></td>
+  `;
+};
+
+function updateStatus(btn) {
+  if (btn.innerText === "Pending") {
+    btn.innerText = "In Progress";
+  } else if (btn.innerText === "In Progress") {
+    btn.innerText = "Ready";
+    btn.style.background = "green";
+  }
+}
+    
