@@ -1,266 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barista Bot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    .status-btn {
-  background: orange; /* Pending = Orange */
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}.filters {
-  margin-bottom: 15px;
-}
-.filters button {
-  background: #6f4e37;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  margin: 5px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.filters button:hover {
-  background: #5a3e2b;
-}
-    
-    <head>
-    .dashboard {
-  background: #fff;
-  color: #333;
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-}
-    <div class="dashboard">
-  <h2>Barista Dashboard</h2>
-  <div class="filters">
-    <button onclick="filterOrders('All')">Show All</button>
-    <button onclick="filterOrders('Pending')">Pending</button>
-    <button onclick="filterOrders('In Progress')">In Progress</button>
-    <button onclick="filterOrders('Ready')">Ready</button>
-  </div>
-  <table id="ordersTable">
-    <thead>
-      <tr>
-        <th>Order #</th>
-        <th>Coffee</th>
-        <th>Size</th>
-        <th>Extras</th>
-        <th>Time</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Orders will appear here -->
-    </tbody>
-  </table>
-</div>
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th, td {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-  text-align: center;
-}
-th {
-  background: #6f4e37;
-  color: #fff;
-}
-.status-btn {
-  background: #6f4e37;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.status-btn:hover {
-  background: #5a3e2b;
-}
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #6f4e37, #3e2723);
-      color: #fff;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      padding: 40px;
-    }
-    .order-box {
-      background: #fff;
-      color: #333;
-      max-width: 400px;
-      margin: 30px auto;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    }
-    h1 {
-      color: #fff;
-      font-size: 2.5em;
-    }
-    h2 {
-      color: #6f4e37;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: 600;
-    }
-    select, input[type="checkbox"] {
-      margin-top: 8px;
-    }
-    button {
-      background: #6f4e37;
-      color: #fff;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #5a3e2b;
-    }
-    footer {
-      margin-top: 40px;
-      padding: 20px;
-      font-size: 14px;
-      color: #ccc;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barista Bot - Powered by Dennis Kathurima</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f0;
+        }
+        
+        .coffee-brown { color: #6b4423; }
+        .bg-coffee { background-color: #6b4423; }
+        .bg-coffee-light { background-color: #8b6f47; }
+        .border-coffee { border-color: #6b4423; }
+        
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-preparing { background: #dbeafe; color: #1e40af; }
+        .status-ready { background: #d1fae5; color: #065f46; animation: pulse-green 2s infinite; }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+        
+        .payment-crypto { background: linear-gradient(135deg, #627eea 0%, #3c5fce 100%); }
+        .payment-mpesa { background: linear-gradient(135deg, #00a650 0%, #008f43 100%); }
+        .payment-web3 { background: linear-gradient(135deg, #f6851b 0%, #e2761b 100%); }
+        
+        .order-row { transition: all 0.3s ease; }
+        .order-row:hover { transform: scale(1.01); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        .notification-toast {
+            animation: slide-in 0.3s ease-out;
+        }
+        
+        @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>☕ Barista Bot</h1>
-    <p>Your personal coffee assistant</p>
-  </header>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { motion, AnimatePresence } = window.Motion;
+        
+        const COFFEE_TYPES = [
+            { id: 'espresso', name: 'Espresso', price: 3.50, basePrice: 3.50 },
+            { id: 'americano', name: 'Americano', price: 4.00, basePrice: 4.00 },
+            { id: 'latte', name: 'Latte', price: 5.00, basePrice: 5.00 },
+            { id: 'cappuccino', name: 'Cappuccino', price: 5.00, basePrice: 5.00 },
+            { id: 'mocha', name: 'Mocha', price: 5.50, basePrice: 5.50 },
+            { id: 'coldbrew', name: 'Cold Brew', price: 4.50, basePrice: 4.50 }
+        ];
+        
+        const SIZES = {
+            small: { multiplier: 1, label: 'Small' },
+            medium: { multiplier: 1.3, label: 'Medium' },
+            large: { multiplier: 1.6, label: 'Large' }
+        };
+        
+        const EXTRAS = {
+            soy: { name: 'Soy Milk', price: 0.75 },
+            extraShot: { name: 'Extra Shot', price: 1.00 },
+            vanilla: { name: 'Vanilla Syrup', price: 0.50 },
+            caramel: { name: 'Caramel Drizzle', price: 0.50 }
+        };
 
-  <div class="order-box">
-    <div class="dashboard">
-  <h2>Barista Dashboard</h2>
-  <table id="ordersTable">
-    <thead>
-      <tr>
-        <thead>
-  <tr>
-    <th>Order #</th>
-    <th>Coffee</th>
-    <th>Size</th>
-    <th>Extras</th>
-    <th>Time</th> <!-- NEW COLUMN -->
-    <th>Status</th>
-  </tr>
-</thead>
-        <th>Order #</th>
-        <th>Coffee</th>
-        <th>Size</th>
-        <th>Extras</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Orders will appear here -->
-    </tbody>
-  </table>
-</div>
-    <h2>Place Your Order</h2>
-    <form id="coffeeForm">
-      <label>Coffee Type:</label>
-      <select name="coffee" required>
-        <option value="Espresso">Espresso</option>
-        <option value="Latte">Latte</option>
-        <option value="Cappuccino">Cappuccino</option>
-        <option value="Mocha">Mocha</option>
-      </select>
-
-      <label>Size:</label>
-      <select name="size" required>
-        <option value="Small">Small</option>
-        <option value="Medium">Medium</option>
-        <option value="Large">Large</option>
-      </select>
-
-      <label>Extras:</label>
-      <div>
-        <input type="checkbox" name="extra" value="Soy Milk"> Soy Milk
-        <input type="checkbox" name="extra" value="Extra Shot"> Extra Shot
-      </div>
-
-      <button type="submit">Confirm Order</button>
-    </form>
-  </div>
-
-  <footer>
-    © 2026 Barista Bot | Powered by Dennis Kathurima
-  </footer>
-
-  <script>
-    function filterOrders(status) {
-  const rows = document.querySelectorAll("#ordersTable tbody tr");
-  rows.forEach(row => {
-    const btn = row.querySelector(".status-btn");
-    if (status === "All" || btn.innerText === status) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
-    }
-  });
-}
-    let orderCount = 0;
-
-document.getElementById("coffeeForm").onsubmit = function(e) {
-  e.preventDefault();
-  const coffee = e.target.coffee.value;
-  const size = e.target.size.value;
-  const extras = Array.from(e.target.extra)
-                      .filter(x => x.checked)
-                      .map(x => x.value)
-                      .join(", ") || "None";
-
-  orderCount++;
-  const time = new Date().toLocaleTimeString(); // NEW LINE
-
-  const table = document.getElementById("ordersTable").querySelector("tbody");
-  const row = table.insertRow();
-  row.innerHTML = `
-    <td>${orderCount}</td>
-    <td>${coffee}</td>
-    <td>${size}</td>
-    <td>${extras}</td>
-    <td>${time}</td> <!-- NEW CELL -->
-    <td><button class="status-btn" onclick="updateStatus(this)">Pending</button></td>
-  `;
-};
-  row.innerHTML = `
-    <td>${orderCount}</td>
-    <td>${coffee}</td>
-    <td>${size}</td>
-    <td>${extras}</td>
-    <td><button class="status-btn" onclick="updateStatus(this)">Pending</button></td>
-  `;
-};
-function updateStatus(btn) {
-  if (btn.innerText === "Pending") {
-    btn.innerText = "In Progress";
-    btn.style.background = "blue";   // In Progress = Blue
-  } else if (btn.innerText === "In Progress") {
-    btn.innerText = "Ready";
-    btn.style.background = "green";  // Ready = Green
-  }
-}
-
+        const BaristaBot = () => {
+            const [view, setView] = useState('customer'); // 'customer' | 'barista' | 'waiter'
+            const [orders, setOrders] = useState([
+                { id: 1001, coffee: 'Espresso', size: 'Small', extras: ['Extra Shot'], status: 'ready', time: '2 min ago', customer: 'Table A3', total: 4.50, feedback: [] },
+                { id: 1002, coffee: 'Latte', size: 'Medium', extras: ['Soy Milk'], status: 'preparing', time: '5 min ago', customer: 'Table B1', total: 6.25, feedback: [] },
+                { id: 1003, coffee: 'Cold Brew', size: 'Large', extras: [], status: 'pending', time: 'Just now', customer: 'Table A1', total: 7.20, feedback: [] }
+            ]);
+            
+            // Order Form State
+            const [selectedCoffee, setSelectedCoffee] = useState('espresso');
+            const [selectedSize, setSelectedSize] = useState('small');
+            const [selectedExtras, setSelectedExtras] = useState([]);
+            const [customerName, setCustomerName] = useState('');
+            const [tableNumber, setTableNumber] = useState('');
+            
+            // Payment & Feedback
+            const [showPayment, setShowPayment] = useState(false);
+            const [paymentMethod, setPaymentMethod] = useState(null);
+            const [wallet, setWallet] = useState(null);
+            const [comments, setComments] = useState({});
+            const [newComment, setNewComment] = useState('');
+            const [notifications, setNotifications] = useState([]);
+            
+            // Calculate price
+            const calculateTotal = () => {
+                const coffee = COFFEE_TYPES.find(c => c.id === selectedCoffee);
+                const sizeMult = SIZES[selectedSize].multiplier;
+                const extrasTotal = selectedExtras.reduce((sum, extra) => sum + EXTRAS[extra].price, 0);
+                return ((coffee.basePrice * sizeMult) + extrasTotal).toFixed(2);
+            };
+            
+            const toggleExtra = (extra) => {
+                if (selectedExtras.includes(extra)) {
+                    setSelectedExtras(selectedExtras.filter(e => e !== extra));
+                } else {
+                    setSelectedExtras([...selectedExtras, extra]);
+                }
+            };
+            
+            const connectWallet = async () => {
+                if (window.ethereum) {
+                    try {
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        setWallet(accounts[0]);
+                        addNotification('Wallet connected successfully!', 'success');
+                    } catch (err) {
+                        addNotification('Failed to connect wallet', 'error');
+                    }
+                } else {
+                    addNotification('Please install MetaMask', 'error');
+                }
+            };
+            
+            const addNotification = (message, type = 'info') => {
+                const id = Date.now();
+                setNotifications(prev => [...prev, { id, message, type }]);
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== id));
+                }, 3000);
+            };
+            
+            const submitOrder = () => {
+                if (!customerName || !tableNumber) {
+                    addNotification('Please fill in all fields', 'error');
+                    return;
+                }
+                
+                const coffee = COFFEE_TYPES.find(c => c.id === selectedCoffee);
+                const newOrder = {
+                    id: 1000 + orders.length + 1,
+                    coffee: coffee.name,
+                    size: SIZES[selectedSize].label,
+                    extras: selectedExtras.map(e => EXTRAS[e].name),
+                    status: 'pending',
+                    time: 'Just now',
+                    customer: `${customerName} (Table ${tableNumber})`,
+                    total: parseFloat(calculateTotal()),
+                    feedback: []
+                };
+                
+                setOrders([newOrder, ...orders]);
+                setShowPayment(false);
+                setPaymentMethod(null);
+                setSelectedExtras([]);
+                addNotification('Order placed successfully!', 'success');
+                
+                // Simulate status updates
+                setTimeout(() => {
+                    setOrders(prev => prev.map(o => 
+                        o.id === newOrder.id ? {...o, status: 'preparing'} : o
+                    ));
+                    addNotification(`Order #${newOrder.id} is being prepared`, 'info');
+                }, 5000);
+            };
+            
+            const updateOrderStatus = (orderId, newStatus) => {
+                setOrders(orders.map(o => 
+                    o.id === orderId ? {...o, status: newStatus} : o
+                ));
+                
+                if (newStatus === 'ready') {
+                    addNotification(`Order #${orderId} is ready for pickup!`, 'success');
+                }
+            };
+            
+            const submitFeedback = (orderId) => {
+                if (!newComment.trim()) return;
+                setComments({
+                    ...comments,
+                    [orderId]: [...(comments[orderId] || []), {
+                        text: newComment,
+                        user: wallet ? `${wallet.slice(0,6)}...` : 'Guest',
+                        time: new Date().toLocaleTimeString()
+                    }]
+                });
+                setNewComment('');
+                addNotification('Feedback submitted!', 'success');
+            };
+            
+            // Notification Component
+            const NotificationContainer = () => (
+                <div className="fixed top-4 right-4 z-50 space-y-2">
+                    <AnimatePresence>
+                        {notifications.map(notif => (
+                            <motion.div
+                                key={notif.id}
+                                initial={{ x: 100, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: 100, opacity: 0 }}
+                                className={`notification-toast px-6 py-3 rounded-lg shadow-lg text-white font-medium ${
+                                    notif.type === 'success' ? 'bg-green-600' :
+                                    notif.type === 'error' ? 'bg-red-600' : 'bg-coffee'
+                                }`}
+                            >
+                                {notif.message}
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+            );
+            
+            // Customer View
+            const CustomerView = () => (
+                <div className="min-h-screen bg-[#f5f5f0]">
+                    {/* Header */}
+                    <div className="bg-coffee text-white p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
+                        </div>
+                        <div className="relative z-10">
+                            <div className="text-6xl mb-2">☕</div>
+                            <h1 className="text-4xl font-bold mb-2">Barista Bot</h1>
+                            <p className="text-white/80">Your personal coffee assistant</p>
+                        </div>
+                        <div className="absolute top-4 right-4 flex gap-2">
+                            <button 
+                                onClick={() => setView('barista')}
+                                className="px-4 py-2 bg-white/20 rounded-full text-sm hover:bg-white/30 transition"
+                            >
+                                Barista Mode
+                            </button>
+                            <button 
+                                onClick={() => setView('waiter')}
+                                className="px-4 py-2 bg-white/20 rounded-full text-sm hover:bg-white/30 transition"
+                            >
+                                Waiter View
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="max-w-4xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Order Form */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200"
+                        >
+                            <h2 className="text-2xl font-bold coffee-brown mb-6 text-center">Place Your Order</h2>
+                            
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-semibold coffee-brown mb-2">Your Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={customerName}
+                                        onChange={(e) => setCustomerName(e.target.value)}
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-coffee focus:outline-none"
+                                        placeholder="Enter your name"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-semibold coffee-brown mb-2">Table Number</label>
+                                    <input 
+                                        type="text" 
+                                        value={tableNumber}
+                                        onChange={(e) => setTableNumber(e.target.value)}
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-coffee focus:outline-none"
+                                        placeholder="e.g., A3"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-semibold coffee-brown mb-2">Coffee Type</label>
+                                    <select 
+                                        value={selectedCoffee}
+                                        onChange={(e) => setSelectedCoffee(e.target.value)}
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-coffee focus:outline-none bg-white"
+                                    >
+                                        {COFFEE_TYPES.map(c => (
+                                            <option key={c.id} value={c.id}>{c.name} - ${c.basePrice}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-semibold coffee-brown mb-2">Size</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {Object.entries(SIZES).map(([key, size]) => (
+                                            <button
+                                                key={key}
+                                                onClick={() => setSelectedSize(key)}
+                                                className={`p-3 rounded-lg border-2 transition-all ${
+                                                    selectedSize === key 
+                                                    ? 'border-coffee bg-coffee text-white' 
+                                                    : 'border-gray-200 hover:border-coffee'
+                                                }`}
+                                            >
+                                                {size.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-semibold coffee-brown mb-2">Extras</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {Object.entries(EXTRAS).map(([key, extra]) => (
+                                            <button
+                                                key={key}
+                                                onClick={() => toggleExtra(key)}
+                                                className={`p-3 rounded-lg border-2 transition-all text-left ${
+                                                    selectedExtras.includes(key)
+                                                    ? 'border-coffee bg-coffee/10'
+                                                    : 'border-gray-200 hover:border-coffee'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                                                        selectedExtras.includes(key) ? 'bg-coffee border-coffee' : 'border-gray-300'
+                                                    }`}>
+                                                        {selectedExtras.includes(key) && <span className="text-white text-xs">✓</span>}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-medium text-sm">{extra.name}</div>
+                                                        <div className="text-xs text-gray-500">+${extra.price}</div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-gray-50 rounded-xl p-4 mt-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-gray-600">Subtotal</span>
+                                        <span className="font-semibold">${calculateTotal()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xl font-bold coffee-brown">
+                                        <span>Total</span>
+                                        <span>${calculateTotal()}</span>
+                                    </div>
+                                </div>
+                                
+                                <button 
+                                    onClick={() => setShowPayment(true)}
+                                    className="w-full py-4 bg-coffee text-white rounded-xl font-bold text-lg hover:bg-coffee-light transition-all transform hover:scale-[1.02] shadow-lg"
+                                >
+                                    Confirm Order
+                                </button>
+                            </div>
+                        </motion.div>
+                        
+                        {/* Live Order Status */}
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-bold coffee-brown">Your Orders</h3>
+                            {orders.filter(o => o.customer.includes(customerName) && customerName).map(order => (
+                                <motion.div 
+                                    key={order.id}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="bg-white rounded-xl shadow-lg p-5 border-l-4 border-coffee"
+                                >
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div>
+                                            <div className="font-bold text-lg coffee-brown">Order #{order.id}</div>
+                                            <div className="text-sm text-gray-500">{order.time}</div>
+                                        </div>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase status-${order.status}`}>
+                                            {order.status}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="space-y-1 mb-3 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Coffee:</span>
+                                            <span className="font-medium">{order.coffee}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Size:</span>
+                                            <span className="font-medium">{order.size}</span>
+                                        </div>
+                                        {order.extras.length > 0 && (
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Extras:</span>
+                                                <span className="font-medium">{order.extras.join(', ')}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between font-bold coffee-brown text-base mt-2 pt-2 border-t">
+                                            <span>Total:</span>
+                                            <span>${order.total.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {order.status === 'ready' && (
+                                        <div className="bg-green-100 border border-green-300 rounded-lg p-3 text-center">
+                                            <span className="text-green-700 font-semibold">☕ Your order is ready!</span>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Feedback Section */}
+                                    <div className="mt-4 pt-4 border-t border-gray-100">
+                                        <div className="text-sm font-semibold coffee-brown mb-2">Feedback</div>
+                                        <div className="space-y-2 mb-2 max-h-24 overflow-y-auto">
+                                            {(comments[order.id] || []).map((comment, idx) => (
+                                                <div key={idx} className="bg-gray-50 rounded p-2 text-xs">
+                                                    <div className="flex justify-between text-gray-500 mb-1">
+                                                        <span>{comment.user}</span>
+                                                        <span>{comment.time}</span>
+                                                    </div>
+                                                    <p>{comment.text}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Leave a comment..."
+                                                className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-coffee"
+                                                value={newComment}
+                                                onChange={(e) => setNewComment(e.target.value)}
+                                            />
+                                            <button 
+                                                onClick={() => submitFeedback(order.id)}
+                                                className="px-4 py-2 bg-coffee text-white rounded-lg text-sm hover:bg-coffee-light"
+                                            >
+                                                Post
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                            
+                            {customerName && orders.filter(o => o.customer.includes(customerName)).length === 0 && (
+                                <div className="text-center text-gray-400 py-8">
+                                    No orders found for {customerName}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {/* Payment Modal */}
+                    <AnimatePresence>
+                        {showPayment && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                            >
+                                <motion.div 
+                                    initial={{ scale: 0.9, y: 20 }}
+                                    animate={{ scale: 1, y: 0 }}
+                                    exit={{ scale: 0.9, y: 20 }}
+                                    className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
+                                >
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-2xl font-bold coffee-brown">Payment</h3>
+                                        <button onClick={() => setShowPayment(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                                    </div>
+                                    
+                                    <div className="text-center mb-6">
+                                        <div className="text-4xl font-bold coffee-brown mb-1">${calculateTotal()}</div>
+                                        <div className="text-gray-500">Total Amount</div>
+                                    </div>
+                                    
+                                    <div className="space-y-3 mb-6">
+                                        <button 
+                                            onClick={() => { setPaymentMethod('mpesa'); connectWallet(); }}
+                                            className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all ${paymentMethod === 'mpesa' ? 'ring-2 ring-green-500 payment-mpesa text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                        >
+                                            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-green-600 font-bold">M</div>
+                                            <div className="text-left">
+                                                <div className="font-semibold">M-Pesa</div>
+                                                <div className="text-xs opacity-80">Pay via mobile money</div>
+                                            </div>
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => { setPaymentMethod('crypto'); connectWallet(); }}
+                                            className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all ${paymentMethod === 'crypto' ? 'ring-2 ring-blue-500 payment-crypto text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                        >
+                                            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold">₿</div>
+                                            <div className="text-left">
+                                                <div className="font-semibold">Cryptocurrency</div>
+                                                <div className="text-xs opacity-80">ETH, USDC, Bitcoin</div>
+                                            </div>
+                                            {wallet && <span className="ml-auto text-xs bg-white/20 px-2 py-1 rounded">Connected</span>}
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => { setPaymentMethod('web3'); connectWallet(); }}
+                                            className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all ${paymentMethod === 'web3' ? 'ring-2 ring-orange-500 payment-web3 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                        >
+                                            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 font-bold">W3</div>
+                                            <div className="text-left">
+                                                <div className="font-semibold">Web3 Wallet</div>
+                                                <div className="text-xs opacity-80">MetaMask, WalletConnect</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    
+                                    <button 
+                                        onClick={submitOrder}
+                                        disabled={!paymentMethod}
+                                        className="w-full py-4 bg-coffee text-white rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-coffee-light transition-all"
+                                    >
+                                        Pay & Place Order
+                                    </button>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    
+                    {/* Footer */}
+                    <div className="bg-coffee text-white text-center p-6 mt-12">
+                        <p>© 2026 Barista Bot | Powered by Dennis Kathurima</p>
+                    </div>
+                    
+                    <NotificationContainer />
+                </div>
+            );
+            
+            // Barista Dashboard
+            const BaristaView = () => (
+                <div className="min-h-screen bg-[#f5f5f0]">
+                    <div className="bg-coffee text-white p-6">
+                        <div className="max-w-6xl mx-auto flex justify-between items-center">
+                            <div>
+                                <h1 className="text-3xl font-bold mb-1">Barista Dashboard</h1>
+                                <p className="text-white/70">Manage orders and track status</p>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="bg-white/20 rounded-lg px-4 py-2 text-center">
+                                    <div className="text-2xl font-bold">{orders.filter(o => o.status === 'pending').length}</div>
+                                    <div className="text-xs">Pending</div>
+                                </div>
+                                <div className="bg-white/20 rounded-lg px-4 py-2 text-center">
+                                    <div className="text-2xl font-bold">{orders.filter(o => o.status === 'preparing').length}</div>
+                                    <div className="text-xs">Preparing</div>
+                                </div>
+                                <div className="bg-white/20 rounded-lg px-4 py-2 text-center">
+                                    <div className="text-2xl font-bold">{orders.filter(o => o.status === 'ready').length}</div>
+                                    <div className="text-xs">Ready</div>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setView('customer')}
+                                className="px-6 py-3 bg-white/20 rounded-full hover:bg-white/30 transition"
+                            >
+                                Back to Customer View
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="max-w-6xl mx-auto p-6">
+                        {/* Orders Table */}
+                        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-coffee text-white">
+                                        <tr>
+                                            <th className="p-4 text-left">Order #</th>
+                                            <th className="p-4 text-left">Customer</th>
+                                            <th className="p-4 text-left">Coffee</th>
+                                            <th className="p-4 text-left">Size</th>
+                                            <th className="p-4 text-left">Extras</th>
+                                            <th className="p-4 text-left">Total</th>
+                                            <th className="p-4 text-left">Status</th>
+                                            <th className="p-4 text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.map(order => (
+                                            <tr key={order.id} className="border-b border-gray-100 order-row">
+                                                <td className="p-4 font-bold coffee-brown">#{order.id}</td>
+                                                <td className="p-4">{order.customer}</td>
+                                                <td className="p-4">{order.coffee}</td>
+                                                <td className="p-4">{order.size}</td>
+                                                <td className="p-4 text-sm text-gray-600">{order.extras.join(', ') || '-'}</td>
+                                                <td className="p-4 font-semibold">${order.total.toFixed(2)}</td>
+                                                <td className="p-4">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase status-${order.status}`}>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    {order.status === 'pending' && (
+                                                        <button 
+                                                            onClick={() => updateOrderStatus(order.id, 'preparing')}
+                                                            className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+                                                        >
+                                                            Start
+                                                        </button>
+                                                    )}
+                                                    {order.status === 'preparing' && (
+                                                        <button 
+                                                            onClick={() => updateOrderStatus(order.id, 'ready')}
+                                                            className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition flex items-center gap-2"
+                                                        >
+                                                            <span>✓</span> Ready
+                                                        </button>
+                                                    )}
+                                                    {order.status === 'ready' && (
+                                                        <span className="text-green-600 font-semibold text-sm flex items-center gap-1">
+                                                            <span className="animate-pulse">🔔</span> Notified Waiter
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        {/* Live Activity Feed */}
+                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 className="text-lg font-bold coffee-brown mb-4">Recent Feedback</h3>
+                                <div className="space-y-3">
+                                    {Object.entries(comments).slice(0, 3).map(([orderId, commentList]) => (
+                                        commentList.slice(-1).map((comment, idx) => (
+                                            <div key={`${orderId}-${idx}`} className="bg-gray-50 rounded-lg p-3 text-sm">
+                                                <div className="flex justify-between text-gray-500 mb-1">
+                                                    <span>Order #{orderId}</span>
+                                                    <span>{comment.time}</span>
+                                                </div>
+                                                <p className="text-gray-700">{comment.text}</p>
+                                            </div>
+                                        ))
+                                    ))}
+                                    {Object.keys(comments).length === 0 && (
+                                        <p className="text-gray-400 text-center py-4">No feedback yet</p>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 className="text-lg font-bold coffee-brown mb-4">Performance Stats</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="text-center p-4 bg-gray-50 rounded-xl">
+                                        <div className="text-3xl font-bold coffee-brown">{orders.length}</div>
+                                        <div className="text-sm text-gray-600">Total Orders</div>
+                                    </div>
+                                    <div className="text-center p-4 bg-gray-50 rounded-xl">
+                                        <div className="text-3xl font-bold coffee-brown">
+                                            ${orders.reduce((a,b) => a + b.total, 0).toFixed(2)}
+                                        </div>
+                                        <div className="text-sm text-gray-600">Revenue</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <NotificationContainer />
+                </div>
+            );
+            
+            // Waiter View
+            const WaiterView = () => (
+                <div className="min-h-screen bg-[#f5f5f0]">
+                    <div className="bg-green-700 text-white p-6">
+                        <div className="max-w-4xl mx-auto flex justify-between items-center">
+                            <div>
+                                <h1 className="text-3xl font-bold mb-1">Waiter Station</h1>
+                                <p className="text-white/70">Pickup notifications</p>
+                            </div>
+                            <button 
+                                onClick={() => setView('customer')}
+                                className="px-6 py-3 bg-white/20 rounded-full hover:bg-white/30 transition"
+                            >
+                                Back to Customer View
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="max-w-4xl mx-auto p-6">
+                        <div className="grid grid-cols-1 gap-4">
+                            {orders.filter(o => o.status === 'ready').map(order => (
+                                <motion.div 
+                                    key={order.id}
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500 flex justify-between items-center"
+                                >
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <span className="text-3xl">☕</span>
+                                            <div>
+                                                <div className="text-2xl font-bold coffee-brown">Order #{order.id}</div>
+                                                <div className="text-gray-600">{order.customer}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-2">
+                                            {order.coffee} • {order.size} • {order.extras.join(', ')}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="animate-pulse bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold mb-2">
+                                            READY FOR PICKUP
+                                        </div>
+                                        <button 
+                                            onClick={() => updateOrderStatus(order.id, 'completed')}
+                                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                                        >
+                                            Mark Delivered
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            ))}
+                            
+                            {orders.filter(o => o.status === 'ready').length === 0 && (
+                                <div className="text-center py-12 text-gray-400">
+                                    <div className="text-6xl mb-4">☕</div>
+                                    <p className="text-xl">No orders ready for pickup</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <NotificationContainer />
+                </div>
+            );
+            
+            return view === 'customer' ? <CustomerView /> : 
+                   view === 'barista' ? <BaristaView /> : 
+                   <WaiterView />;
+        };
+        
+        ReactDOM.createRoot(document.getElementById('root')).render(<BaristaBot />);
+    </script>
+</body>
+</html>
